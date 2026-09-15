@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b14">
+<title>Panel</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080b14;color:#fff;font-family:Arial,sans-serif;min-height:100vh}
+header{padding:24px 18px 14px;text-align:center}h1{margin:0;font-size:27px}.sub{color:#9da7bd;margin-top:7px;font-size:14px}
+main{width:92%;max-width:520px;margin:auto}.panel{background:#111725;border:1px solid #263047;border-radius:16px;padding:16px;margin:14px 0}
+input{width:100%;padding:13px;margin:7px 0;background:#0b1020;color:#fff;border:1px solid #303b55;border-radius:10px;font-size:15px}
+button{border:0;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:bold;cursor:pointer}.add{width:100%;margin-top:7px}
+.card{background:#0b1020;border:1px solid #27324a;border-radius:13px;padding:14px;margin:10px 0}.row{display:flex;gap:8px;align-items:center}
+.name{font-size:18px;font-weight:bold;flex:1}.cmd{margin:9px 0;color:#b9c3d8;font-size:14px}.actions{display:flex;gap:8px}.actions button{flex:1}
+.empty{text-align:center;color:#8994aa;padding:22px}.note{font-size:12px;color:#7f8aa0;line-height:1.5;margin-top:12px}
+</style>
+</head>
+<body>
+<header><h1>🎮 Panel</h1><div class="sub">Your personal app launcher</div></header>
+<main>
+<section class="panel">
+<input id="appName" placeholder="App name (e.g. YouTube)">
+<input id="appLink" placeholder="App/Web link (e.g. https://youtube.com)">
+<input id="command" placeholder="Your command (e.g. START)">
+<button class="add" onclick="addApp()">➕ Add App</button>
+<div class="note">This launcher opens the link you provide. It does not control or automatically tap inside another app.</div>
+</section>
+<section class="panel"><div id="list"></div></section>
+</main>
+<script>
+const KEY="friendControlApps";let apps=JSON.parse(localStorage.getItem(KEY)||"[]");
+function save(){localStorage.setItem(KEY,JSON.stringify(apps));render()}
+function addApp(){const name=appName.value.trim(),link=appLink.value.trim(),command=commandInput.value.trim();
+if(!name||!link||!command){alert("সব ঘর পূরণ করো 🙂");return}apps.push({id:Date.now(),name,link,command});
+appName.value="";appLink.value="";commandInput.value="";save()}
+const commandInput=document.getElementById("command");
+function openApp(id){const app=apps.find(x=>x.id===id);if(app)window.open(app.link,"_blank")}
+function editApp(id){const app=apps.find(x=>x.id===id);if(!app)return;
+const name=prompt("App name:",app.name);if(name===null)return;const command=prompt("Command:",app.command);if(command===null)return;
+const link=prompt("App/Web link:",app.link);if(link===null)return;app.name=name.trim()||app.name;app.command=command.trim()||app.command;app.link=link.trim()||app.link;save()}
+function removeApp(id){if(confirm("এই app-টা remove করবে?")){apps=apps.filter(x=>x.id!==id);save()}}
+function esc(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function render(){const list=document.getElementById("list");if(!apps.length){list.innerHTML='<div class="empty">এখনো কোনো app যোগ করা হয়নি 🙂</div>';return}
+list.innerHTML=apps.map(a=>`<div class="card"><div class="row"><div class="name">📱 ${esc(a.name)}</div></div>
+<div class="cmd">Command: <b>${esc(a.command)}</b></div><div class="actions">
+<button onclick="openApp(${a.id})">▶️ ${esc(a.command)}</button><button onclick="editApp(${a.id})">✏️ Edit</button><button onclick="removeApp(${a.id})">🗑️</button>
+</div></div>`).join("")}render();
+</script>
+</body>
+</html>
